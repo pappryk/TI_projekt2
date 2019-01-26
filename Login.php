@@ -11,7 +11,7 @@ function get_request_method()
 
 try{
     
-    if (get_request_method() == "POST")
+    if (get_request_method() != "POST"  || !isset($_POST["login"]) || !isset($_POST["password"]) || empty($_POST["login"]) || empty($_POST["password"]))
     {
         header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     }
@@ -20,30 +20,40 @@ try{
         $query = "SELECT * FROM uzytkownicy";
 
         $db = new DB();
-        $db->execute_query($query);
+        $db->read($query);
     
         $authenticated = false;
     
-        foreach($db->result as $val)
+        foreach($db->$result as $val)
         {
-            if ($val["nazwa_uzytkownika"] == $_POST["nazwa_uzytkownika"])
+            if ($val["nazwa_uzytkownika"] == $_POST["login"])
             {
-                if ($val["haslo"] == $_POST["haslo"])
+                if ($val["haslo"] == $_POST["password"])
                 {
                     $authenticated = true;
                 }
             }
         }
+
+
+
+
     
         if ($authenticated)
         {
+            session_start();
+            session_unset();
+            $_SESSION['newsession'] = 123123;
+            $_SESSION['username'] = $_POST["login"];
             header($_SERVER["SERVER_PROTOCOL"]." 200 OK", true, 200); 
         }
         else
         {
+            
             header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404); 
         }
     }
+    exit;
 }
 catch(PDOException $e)
 {

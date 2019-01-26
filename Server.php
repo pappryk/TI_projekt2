@@ -17,14 +17,15 @@ try{
     {
         $query = "SELECT * FROM zdarzenia;";
     }
-    else if (get_request_method() == "POST")
+    else if (get_request_method() != "POST")
     {
         $query = "INSERT INTO zdarzenia (nazwa_zdarzenia, data_zdarzenia) VALUES ('" . $_POST["nazwa_zdarzenia"] . "', '" . $_POST["data_zdarzenia"] . "');";
     }
 
+    $query = "SELECT * FROM uzytkownicy;";
 
     $db = new DB();
-    $db->execute_query($query);
+    $db->read($query);
     echo json_encode($db->$result);
 
 }

@@ -1,6 +1,8 @@
 <?php
 
-if (session_status() == PHP_SESSION_ACTIVE)
+session_start();
+
+if (isset($_SESSION['newsession']) && isset($_SESSION['username']))
 {
     header("Location: /projekt2/Index.php");
     die();
@@ -26,5 +28,6 @@ if (session_status() == PHP_SESSION_ACTIVE)
         <button id="loginButton" onclick="login()">Zaloguj się</button>
         <button id="loginButton" onclick="register()">Zarejestruj się</button>
     </div>
+    <div id="message"></div>
 </body>
 </html>

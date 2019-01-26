@@ -1,7 +1,6 @@
 <?php
 
 require_once('DB.php');
-header("Content-Type: application/json; charset=UTF-8");
 
 
 function get_request_method()
@@ -13,16 +12,37 @@ function get_request_method()
 try{
     $query;
     
-    if (get_request_method() == "POST")
+    if (get_request_method() != "POST"  || !isset($_POST["login"]) || !isset($_POST["password"]) || empty($_POST["login"]) || empty($_POST["password"]))
     {
-        $query = "INSERT INTO uzytkownicy (nazwa_uzytkownika, haslo) VALUES ('" . $_POST["nazwa_uzytkownika"] . "', '" . $_POST["haslo"] . "');";
+        header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+        exit("Niepoprawne dane uzytkownika");
+    }
+    else
+    {
+        $db = new DB();
+        $query = "SELECT * FROM uzytkownicy WHERE nazwa_uzytkownika = '" . $_POST["login"] . "';";
+        $db->read($query);
+
+        if (count($db->$result) > 0)
+        {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 406 Not Acceptable', true, 406);
+            exit("Nazwa uzytkownika zajeta");
+        }
+
+        $db = new DB();
+
+        $query = "INSERT INTO uzytkownicy (nazwa_uzytkownika, haslo) VALUES ('" . $_POST["login"] . "', '" . $_POST["password"] . "');";
+
+        $db->insert($query);
+
+        header($_SERVER["SERVER_PROTOCOL"]." 200 OK", true, 200); 
+        echo "Zarejestrowano";
     }
 
 
-    $db = new DB();
-    $db->execute_query($query);
-    echo json_encode($db->$result);
+    
 
+    
 }
 catch(PDOException $e)
 {
