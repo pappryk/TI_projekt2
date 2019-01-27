@@ -26,6 +26,7 @@ if (!isset($_SESSION['newsession']) || !isset($_SESSION['username']))
 </head>
 <body>
     <div class="navbar">
+        <a href="#" onclick='drawService()'>Serwis</a>
         <a href="#" onclick='drawChart()'>Wykres</a>
         <a href="Logout.php">Wyloguj</a>
     </div>

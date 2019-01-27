@@ -43,7 +43,6 @@ request.onerror = function(event) {
 
 request.onsuccess = function(event) {
     db = event.target.result;
-    console.log("scuccess" + db);
 };
 
 request.onupgradeneeded = function(event) {
@@ -148,7 +147,6 @@ function sendDataFromLocalToServer()
                 return response.text();
             })
             .then(body => {
-                console.log(body);
             });
             cursor.continue();
         }
@@ -161,7 +159,7 @@ function sendDataFromLocalToServer()
             result.innerHTML = toRender;
             toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
             var del = objectStore.clear();
-            del.onerror = () => console.log("Nie udało się przesłać danych z lokalnej bazy!")
+            del.onerror = () => document.getElementById('message').innerHTML = "Nie udało się przesłać danych z lokalnej bazy!";
         }
 
     }
@@ -268,12 +266,27 @@ function validate()
 
 
 
-function drawChart()
+async function drawChart()
 {
     let main = document.getElementById('main');
     let days = 31;
     let width = (window.innerWidth - 200) / (days);
     let maxHeight = 200;
+
+    let data = await fetch("ChartData.php").then(response => response.json());
+
+    let chData = new Array(days);
+
+    let maxValue = 3;
+
+    chData.fill(0, 0, days - 1);
+    for (let i = 0; i < data.length; ++i)
+    {
+        let l = data[i].data_zdarzenia.length;
+        let index = parseInt(data[i].data_zdarzenia.substring(l - 2));
+        chData[index] = data[i].ilosc;
+    }
+
 
     let toRender = "<svg width='" + window.innerWidth + "'px' height='500px'>";
     for (let i = 0; i < days; ++i)
@@ -282,12 +295,12 @@ function drawChart()
         let r = Math.floor((Math.random() * 255))
         let g = Math.floor((Math.random() * 255))
         let b = Math.floor((Math.random() * 255))
-        let height = 200;
-        let y = maxHeight - height;
+        let height = chData[i]/maxValue * maxHeight + 2;
+        let y = parseInt(maxHeight - height);
         let textY = maxHeight + 20;
 
         toRender += "<rect width='" + width + "px' x='" + x + "' height='" + height + "px' y='" + y + "' style='fill:rgb(" + r + ", " + g + ", " + b + ")' />"
-        toRender += "<text x='" + x + "' y='" + textY + "'>01</text>"; 
+        toRender += "<text x='" + x + "' y='" + textY + "'>" + (i+1) + "</text>"; 
 
     }
     toRender += "</svg>";
@@ -296,24 +309,29 @@ function drawChart()
 
 
 
+function drawService()
+{
+    let main = document.getElementById('main');
+    main.innerHTML = `<form id="form">
+    <input type="date" name="date" value="2019-01-26" min="2019-01-01" max="2019-01-31"/>
+    <input type="text" name="name" placeholder="Nazwa wydarzenia"/>
+</form>
+<div id="message"></div>
+<button id="sendToServerButton" onclick="sendDataToServer()">Wyślij na serwer</button>
+<button id="sendToLocalButton" onclick="sendDataToLocal()">Wyślij do lokalnej bazy</button>
+<br><br>
+
+<button onclick="fetchDataFromServer()">Pobierz dane z serwera</button>
+<button onclick="fetchDataFromLocal()">Pobierz dane z lokalnej bazy</button>
+<div id="result"></div>`;
+}
+
+
+
 
 
 function onLoad()
-{
-
-
-    // request = indexedDB.open(dbName, 3);
-
-
-
-
-    // var db = indexedDB.open(dbName, 1, function(upgradeDb) {
-    //     if (!upgradeDb.objectStoreNames.contains('zdarzenia')) {
-    //         var mydb = upgradeDb.createObjectStore('zdarzenia');
-    //     }
-    // });
-
-    
+{   
 
 }
 
