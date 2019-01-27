@@ -15,7 +15,7 @@ try{
     if (get_request_method() != "POST"  || !isset($_POST["login"]) || !isset($_POST["password"]) || empty($_POST["login"]) || empty($_POST["password"]))
     {
         header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-        exit("Niepoprawne dane uzytkownika");
+        exit("Niepoprawne dane użytkownika!");
     }
     else
     {
@@ -26,7 +26,7 @@ try{
         if (count($db->$result) > 0)
         {
             header($_SERVER['SERVER_PROTOCOL'] . ' 406 Not Acceptable', true, 406);
-            exit("Nazwa uzytkownika zajeta");
+            exit("Nazwa użytkownika zajęta!");
         }
 
         $db = new DB();
@@ -36,7 +36,7 @@ try{
         $db->insert($query);
 
         header($_SERVER["SERVER_PROTOCOL"]." 200 OK", true, 200); 
-        echo "Zarejestrowano";
+        echo "Rejestracja powiodła się!";
     }
 
 

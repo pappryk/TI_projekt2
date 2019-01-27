@@ -1,7 +1,13 @@
 <?php
 
 require_once('DB.php');
-header("Content-Type: application/json; charset=UTF-8");
+session_start();
+
+if (!isset($_SESSION['newsession']) || !isset($_SESSION['username']))
+{
+    session_unset();
+    die();
+}
 
 
 function get_request_method()
@@ -15,18 +21,26 @@ try{
     
     if (get_request_method() == "GET")
     {
+        header("Content-Type: application/json; charset=UTF-8");
         $query = "SELECT * FROM zdarzenia;";
+        $db = new DB();
+        $db->read($query);
+        echo json_encode($db->$result);
     }
-    else if (get_request_method() != "POST")
+    else if (get_request_method() == "POST")
     {
-        $query = "INSERT INTO zdarzenia (nazwa_zdarzenia, data_zdarzenia) VALUES ('" . $_POST["nazwa_zdarzenia"] . "', '" . $_POST["data_zdarzenia"] . "');";
+        if (!isset($_POST["name"]) || !isset($_POST["date"]) || empty($_POST["name"]) || empty($_POST["date"]))
+        {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 406 Not Acceptable', true, 406);
+            exit("Błąd formatu");
+        }
+        $query = "INSERT INTO zdarzenia (nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) VALUES ('" . $_POST["name"] . "', '" . $_POST["date"] . "', '" . $_SESSION['username'] . "');";
+        $db = new DB();
+        $db->insert($query);
+
     }
 
-    $query = "SELECT * FROM uzytkownicy;";
 
-    $db = new DB();
-    $db->read($query);
-    echo json_encode($db->$result);
 
 }
 catch(PDOException $e)

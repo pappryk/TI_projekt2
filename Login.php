@@ -14,6 +14,7 @@ try{
     if (get_request_method() != "POST"  || !isset($_POST["login"]) || !isset($_POST["password"]) || empty($_POST["login"]) || empty($_POST["password"]))
     {
         header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+        exit("Niepoprawny login lub hasło.");
     }
     else
     {
@@ -49,8 +50,8 @@ try{
         }
         else
         {
-            
-            header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404); 
+            header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found", true, 404);
+            exit("Niepoprawny login lub hasło!");
         }
     }
     exit;
