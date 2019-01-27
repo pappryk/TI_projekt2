@@ -35,7 +35,9 @@ try{
             header($_SERVER['SERVER_PROTOCOL'] . ' 406 Not Acceptable', true, 406);
             exit("Błąd formatu");
         }
-        $query = "INSERT INTO zdarzenia (nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) VALUES ('" . $_POST["name"] . "', '" . $_POST["date"] . "', '" . $_SESSION['username'] . "');";
+        
+        $user = isset($_POST['username']) ? $_POST['username'] : $_SESSION['username'];
+        $query = "INSERT INTO zdarzenia (nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) VALUES ('" . $_POST["name"] . "', '" . $_POST["date"] . "', '" . $user . "');";
         $db = new DB();
         $db->insert($query);
 

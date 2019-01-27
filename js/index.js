@@ -27,6 +27,7 @@ window.addEventListener('offline', function(){
 
 
 let dbName = "SSDB";
+let chartData = [];
 
 
 if (!window.indexedDB) {
@@ -60,10 +61,12 @@ request.onupgradeneeded = function(event) {
 function sendDataToLocal()
 {
     let form = document.getElementById('form');
-
+    if (!validate())
+        return false;
     let z = {
         nazwa_zdarzenia: form.name.value,
         data_zdarzenia: form.date.value,
+        nazwa_uzytkownika: getCookie('username')
     };
     
     var request = db.transaction(["zdarzenia"], "readwrite")
@@ -72,15 +75,12 @@ function sendDataToLocal()
 
     request.onerror = function(event)
     {
-        alert("NIE UDALO SIE DODAC");
+        document.getElementById('message').innerHTML = "Nie udało się dodać rekordu do bazy danych!";
     }
 
     request.onsuccess = function(event)
     {
-        alert("UDALO SIE DODAC");
     }
-    // let objectStore = transaction.objectStore("zdarzenia");
-
 }
 
 let toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
@@ -96,7 +96,7 @@ function fetchDataFromLocal()
         
         if (cursor)
         {
-            toRender += "<div id='localFetchResult'><tr><td>" + cursor.value.nazwa_zdarzenia + "</td><td>" + cursor.value.data_zdarzenia + "</td><td>" + "COS" + "</td></tr>";
+            toRender += "<div id='localFetchResult'><tr><td>" + cursor.value.nazwa_zdarzenia + "</td><td>" + cursor.value.data_zdarzenia + "</td><td>" + cursor.value.nazwa_uzytkownika + "</td></tr>";
             cursor.continue();
         }
         else
@@ -109,15 +109,63 @@ function fetchDataFromLocal()
             toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
         }
 
-
     }
 }
 
+///////////////////////////////////////////////////////////
 
 
 
 
+function sendDataFromLocalToServer()
+{
+    var objectStore = db.transaction(["zdarzenia"], "readwrite").objectStore("zdarzenia");
+    let result = document.getElementById('result');
 
+    
+
+    objectStore.openCursor().onsuccess = function(event) {
+        var cursor = event.target.result;
+                
+        if (cursor)
+        {
+            let data = new FormData();
+            data.append("name", cursor.value.nazwa_zdarzenia);
+            data.append("date", cursor.value.data_zdarzenia);
+            data.append("username", cursor.value.nazwa_uzytkownika)
+        
+            fetch('Server.php', {
+                method: "POST",
+                body: data
+            })
+            .then(response => {
+                
+                if (!response.ok)
+                {
+                    document.getElementById('message').innerHTML = "Nie udało się dodać rekordu do bazy danych!";
+                }
+            
+                return response.text();
+            })
+            .then(body => {
+                console.log(body);
+            });
+            cursor.continue();
+        }
+        else
+        {
+            toRender += "</table>"
+            if (navigator.onLine)
+                toRender += onlineButton;
+            toRender += "</div>";
+            result.innerHTML = toRender;
+            toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
+            var del = objectStore.clear();
+            del.onerror = () => console.log("Nie udało się przesłać danych z lokalnej bazy!")
+        }
+
+    }
+}
 
 
 
@@ -136,12 +184,12 @@ function fetchDataFromServer()
         .then(response => response.json())
         .then(data => {
             let toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
+            chartData = [];
             for (let i = 0; i < data.length; ++i)
             {
+                chartData.push(data[i]);
                 toRender += "<tr><td>" + data[i].nazwa_zdarzenia + "</td><td>" + data[i].data_zdarzenia + "</td><td>" + data[i].nazwa_uzytkownika + "</td></tr>";
-
             }
-            console.log(data);
 
             toRender += "</table>";
 
@@ -216,6 +264,38 @@ function validate()
 }
 
 
+/////////////// Chart ///////////////////
+
+
+
+function drawChart()
+{
+    let main = document.getElementById('main');
+    let days = 31;
+    let width = (window.innerWidth - 200) / (days);
+    let maxHeight = 200;
+
+    let toRender = "<svg width='" + window.innerWidth + "'px' height='500px'>";
+    for (let i = 0; i < days; ++i)
+    {
+        let x = i * width + i;
+        let r = Math.floor((Math.random() * 255))
+        let g = Math.floor((Math.random() * 255))
+        let b = Math.floor((Math.random() * 255))
+        let height = 200;
+        let y = maxHeight - height;
+        let textY = maxHeight + 20;
+
+        toRender += "<rect width='" + width + "px' x='" + x + "' height='" + height + "px' y='" + y + "' style='fill:rgb(" + r + ", " + g + ", " + b + ")' />"
+        toRender += "<text x='" + x + "' y='" + textY + "'>01</text>"; 
+
+    }
+    toRender += "</svg>";
+    main.innerHTML = toRender;
+}
+
+
+
 
 
 function onLoad()
@@ -236,3 +316,22 @@ function onLoad()
     
 
 }
+
+
+
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }

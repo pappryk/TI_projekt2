@@ -13,7 +13,3 @@ create table zdarzenia (
 
 
 insert into uzytkownicy (nazwa_uzytkownika, haslo) values ('adm', 'haslo');
-
-insert into zdarzenia(nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) values('Turniej Skokow narciarskich w Zakopanem', '15-01-19 15:30:00', 'adm');
-insert into zdarzenia(nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) values ('Mundial', '08-06-18 18:00:00', 'adm');
-insert into zdarzenia(nazwa_zdarzenia, data_zdarzenia, nazwa_uzytkownika) values ('Pilka nozna - Polska vs Afganistan', '11-09-18 20:30:00', 'adm');

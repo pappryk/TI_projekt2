@@ -46,6 +46,7 @@ try{
             session_unset();
             $_SESSION['newsession'] = 123123;
             $_SESSION['username'] = $_POST["login"];
+            setcookie('username', $_POST["login"]);
             header($_SERVER["SERVER_PROTOCOL"]." 200 OK", true, 200); 
         }
         else

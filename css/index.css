@@ -41,6 +41,8 @@ input {
 
 #main {
     margin: 100px;
+    position: relative;
+    text-align: center;
 }
 
 #main table {
