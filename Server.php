@@ -23,6 +23,7 @@ try{
     {
         header("Content-Type: application/json; charset=UTF-8");
         $query = "SELECT * FROM zdarzenia;";
+        // $query = "SELECT data_zdarzenia , count(*) FROM zdarzenia GROUP BY data_zdarzenia;";
         $db = new DB();
         $db->read($query);
         echo json_encode($db->$result);

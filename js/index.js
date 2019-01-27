@@ -1,3 +1,37 @@
+window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
+document.addEventListener('DOMContentLoaded', onLoad);
+let dbName = "SSDB";
+
+
+if (!window.indexedDB) {
+    window.alert("Przeglądarka nie wspiera lokalnej bazy danych.");
+}
+
+var request = indexedDB.open(dbName, 4);
+
+request.onerror = function(event) {
+    alert('Nie udało się połączyć z lokalną bazą');
+    return false;
+};
+
+request.onsuccess = function(event) {
+    db = event.target.result;
+    console.log("scuccess" + db);
+};
+
+request.onupgradeneeded = function(event) {
+    var db = event.target.result;
+    db.createObjectStore("zdarzenia");
+}
+
+
+
+
+
+
+
+
 function fetchDataFromServer()
 {
 
@@ -59,6 +93,37 @@ function sendDataToServer()
 
 
 
+
+function sendDataToLocal()
+{
+    let z = {
+        nazwa_zdarzenia: "Jakis mecz",
+        data_zdarzenia: "2019-01-25",
+        nazwa_uzytkownika: "adm"
+    };
+    
+    var request = db.transaction(["zdarzenia"], "readwrite")
+        .objectStore("zdarzenia")
+        .add(z);
+
+    request.onerror = function(event)
+    {
+        alert("NIE UDALO SIE DODAC");
+    }
+
+    request.onsuccess = function(event)
+    {
+        alert("UDALO SIE DODAC");
+    }
+    // let objectStore = transaction.objectStore("zdarzenia");
+
+}
+
+
+
+
+
+
 function validate()
 {
     let form = document.getElementById("form");
@@ -84,4 +149,26 @@ function validate()
 
     document.getElementById('message').innerHTML = "";    
     return true;
+}
+
+
+
+
+function onLoad()
+{
+
+
+    // request = indexedDB.open(dbName, 3);
+
+
+
+
+    var db = indexedDB.open(dbName, 1, function(upgradeDb) {
+        if (!upgradeDb.objectStoreNames.contains('zdarzenia')) {
+            var mydb = upgradeDb.createObjectStore('zdarzenia');
+        }
+    });
+
+    
+
 }
