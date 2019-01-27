@@ -39,6 +39,7 @@ if (!isset($_SESSION['newsession']) || !isset($_SESSION['username']))
         <br><br>
 
         <button onclick="fetchDataFromServer()">Pobierz dane z serwera</button>
+        <button onclick="fetchDataFromLocal()">Pobierz dane z lokalnej bazy</button>
         <div id="result"></div>
 
         

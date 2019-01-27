@@ -1,6 +1,31 @@
+///////////////////////LOCAL OPERATIONS//////////////////
+
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
 document.addEventListener('DOMContentLoaded', onLoad);
+
+
+let onlineButton = "<br><button onclick='sendDataFromLocalToServer()'>Wyślij dane z lokalnej bazy na serwer</button>";
+
+window.addEventListener('online', function(){
+    lfr = document.getElementById('localFetchResult');
+    if (lfr)
+    {
+        lfr.innerHTML += onlineButton;
+        fetchDataFromLocal();
+    }
+});
+
+window.addEventListener('offline', function(){
+    lfr = document.getElementById('localFetchResult');
+    if (lfr)
+    {
+        fetchDataFromLocal();
+    }
+});
+
+
+
 let dbName = "SSDB";
 
 
@@ -22,7 +47,7 @@ request.onsuccess = function(event) {
 
 request.onupgradeneeded = function(event) {
     var db = event.target.result;
-    db.createObjectStore("zdarzenia");
+    db.createObjectStore("zdarzenia", {autoIncrement: true});
 }
 
 
@@ -31,6 +56,75 @@ request.onupgradeneeded = function(event) {
 
 
 
+
+function sendDataToLocal()
+{
+    let form = document.getElementById('form');
+
+    let z = {
+        nazwa_zdarzenia: form.name.value,
+        data_zdarzenia: form.date.value,
+    };
+    
+    var request = db.transaction(["zdarzenia"], "readwrite")
+        .objectStore("zdarzenia")
+        .add(z);
+
+    request.onerror = function(event)
+    {
+        alert("NIE UDALO SIE DODAC");
+    }
+
+    request.onsuccess = function(event)
+    {
+        alert("UDALO SIE DODAC");
+    }
+    // let objectStore = transaction.objectStore("zdarzenia");
+
+}
+
+let toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
+
+
+function fetchDataFromLocal()
+{
+    var objectStore = db.transaction(["zdarzenia"]).objectStore("zdarzenia");
+    let result = document.getElementById('result');
+
+    objectStore.openCursor().onsuccess = function(event) {
+        var cursor = event.target.result;
+        
+        if (cursor)
+        {
+            toRender += "<div id='localFetchResult'><tr><td>" + cursor.value.nazwa_zdarzenia + "</td><td>" + cursor.value.data_zdarzenia + "</td><td>" + "COS" + "</td></tr>";
+            cursor.continue();
+        }
+        else
+        {
+            toRender += "</table>"
+            if (navigator.onLine)
+                toRender += onlineButton;
+            toRender += "</div>";
+            result.innerHTML = toRender;
+            toRender = "<table><tr><th>Wydarzenie</th><th>Data</th><th>Użytkownik</th></tr>";
+        }
+
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////// SERVER OPERATIONS //////////////////////
 
 function fetchDataFromServer()
 {
@@ -94,36 +188,6 @@ function sendDataToServer()
 
 
 
-function sendDataToLocal()
-{
-    let z = {
-        nazwa_zdarzenia: "Jakis mecz",
-        data_zdarzenia: "2019-01-25",
-        nazwa_uzytkownika: "adm"
-    };
-    
-    var request = db.transaction(["zdarzenia"], "readwrite")
-        .objectStore("zdarzenia")
-        .add(z);
-
-    request.onerror = function(event)
-    {
-        alert("NIE UDALO SIE DODAC");
-    }
-
-    request.onsuccess = function(event)
-    {
-        alert("UDALO SIE DODAC");
-    }
-    // let objectStore = transaction.objectStore("zdarzenia");
-
-}
-
-
-
-
-
-
 function validate()
 {
     let form = document.getElementById("form");
@@ -163,11 +227,11 @@ function onLoad()
 
 
 
-    var db = indexedDB.open(dbName, 1, function(upgradeDb) {
-        if (!upgradeDb.objectStoreNames.contains('zdarzenia')) {
-            var mydb = upgradeDb.createObjectStore('zdarzenia');
-        }
-    });
+    // var db = indexedDB.open(dbName, 1, function(upgradeDb) {
+    //     if (!upgradeDb.objectStoreNames.contains('zdarzenia')) {
+    //         var mydb = upgradeDb.createObjectStore('zdarzenia');
+    //     }
+    // });
 
     
 
